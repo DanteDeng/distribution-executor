@@ -11,7 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -36,8 +38,7 @@ public class DistributionExecutor implements Executor {
     /**
      * 线程池（后续改成使用容器管理的）
      */
-    private ThreadPoolExecutor executor = new ThreadPoolExecutor(40, 80, 0,
-            TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+    private ThreadPoolExecutor executor;
     /**
      * 锁
      */
@@ -155,7 +156,7 @@ public class DistributionExecutor implements Executor {
                     continue;
                 }
             }
-            Future<?> future = executor.submit(() -> {
+            Future<?> future = getExecutor().submit(() -> {
                 try {
                     work.handleDatum(param, datum);  // 处理逻辑需要支持重试，如果不支持可能因为重试导致数据不准确
                 } catch (Throwable t) {
@@ -350,4 +351,21 @@ public class DistributionExecutor implements Executor {
         }
     }
 
+    /**
+     * @return 执行器线程池
+     */
+    private ThreadPoolExecutor getExecutor() {
+        if (executor == null) {
+            throw new NullPointerException("请先初始化执行器线程池");
+        }
+        return executor;
+    }
+
+    /**
+     * 设置执行器线程池
+     * @param executor 执行器线程池
+     */
+    public void setExecutor(ThreadPoolExecutor executor) {
+        this.executor = executor;
+    }
 }
