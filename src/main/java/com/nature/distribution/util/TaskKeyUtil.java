@@ -2,6 +2,8 @@ package com.nature.distribution.util;
 
 import com.nature.distribution.model.Keyable;
 
+import java.util.stream.IntStream;
+
 /**
  * 生成规则：平台->金额类型->产品编号->账户编号
  * 体现形式：名称包括数据类型，顾名思义~~~
@@ -145,7 +147,7 @@ public class TaskKeyUtil {
     public static String genLockKey(Object... objects) {
         StringBuilder lockKey = new StringBuilder(BASE_PREFIX + LOCK_PREFIX);
         int length = objects.length;
-        for (int i = 0; i < length; i++) {
+        IntStream.range(0, length).forEach(i -> {
             Object object = objects[i];
             if (object != null) {
                 lockKey.append(object);
@@ -153,7 +155,7 @@ public class TaskKeyUtil {
                     lockKey.append(SEPARATOR);
                 }
             }
-        }
+        });
         return lockKey.toString();
     }
 
